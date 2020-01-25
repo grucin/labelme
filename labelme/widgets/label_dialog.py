@@ -43,9 +43,14 @@ class LabelDialog(QtWidgets.QDialog):
         self.edit.editingFinished.connect(self.postProcess)
         if flags:
             self.edit.textChanged.connect(self.updateFlags)
+        self.edit_id = QtWidgets.QLineEdit()
+        self.edit_id.setPlaceholderText('ID')
         layout = QtWidgets.QVBoxLayout()
         if show_text_field:
-            layout.addWidget(self.edit)
+            layout_edit = QtWidgets.QHBoxLayout()
+            layout_edit.addWidget(self.edit, 6)
+            layout_edit.addWidget(self.edit_id, 1)
+            layout.addLayout(layout_edit)
         # buttons
         self.buttonBox = bb = QtWidgets.QDialogButtonBox(
             QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel,
@@ -178,7 +183,7 @@ class LabelDialog(QtWidgets.QDialog):
             flags[item.text()] = item.isChecked()
         return flags
 
-    def popUp(self, text=None, move=True, flags=None):
+    def popUp(self, text=None, move=True, flags=None, id=None):
         if self._fit_to_content['row']:
             self.labelList.setMinimumHeight(
                 self.labelList.sizeHintForRow(0) * self.labelList.count() + 2
@@ -194,8 +199,11 @@ class LabelDialog(QtWidgets.QDialog):
             self.setFlags(flags)
         else:
             self.resetFlags(text)
+        if id is None:
+            id = ''
         self.edit.setText(text)
         self.edit.setSelection(0, len(text))
+        self.edit_id.setText(id)
         items = self.labelList.findItems(text, QtCore.Qt.MatchFixedString)
         if items:
             if len(items) != 1:
@@ -207,6 +215,6 @@ class LabelDialog(QtWidgets.QDialog):
         if move:
             self.move(QtGui.QCursor.pos())
         if self.exec_():
-            return self.edit.text(), self.getFlags()
+            return self.edit.text(), self.getFlags(), self.edit_id.text()
         else:
-            return None, None
+            return None, None, None
